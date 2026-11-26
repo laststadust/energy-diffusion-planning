@@ -91,3 +91,12 @@ environment.
 This project builds on DiffusionDriveV2 and NAVSIM. See
 [third-party notices](THIRD_PARTY_NOTICES.md) and [license information](LICENSE.md)
 for attribution and licensing details.
+
+## Citation and license
+
+Version [v0.1.0](https://github.com/laststadust/energy-diffusion-planning/releases/tag/v0.1.0)
+is documented in the [changelog](CHANGELOG.md). Use [CITATION.cff](CITATION.cff)
+to cite this software release.
+
+Project-specific code is distributed under the [MIT License](LICENSE.md).
+Third-party code retains its original license.

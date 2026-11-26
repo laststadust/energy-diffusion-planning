@@ -7,6 +7,8 @@ name = "ddv2-energy"
 version = "0.1.0"
 description = "Candidate-energy rewards for anchor-based diffusion planning"
 readme = "README.md"
+license = {file = "LICENSE.md"}
+authors = [{name = "laststadust"}]
 requires-python = ">=3.9"
 dependencies = ["numpy>=1.23.4,<3", "torch>=2.0.1,<2.8"]
 
