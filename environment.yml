@@ -1,0 +1,7 @@
+name: energy-navsim
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pip=23.3.1
+# Install PyTorch/NAVSIM using docs/setup.md after creating this environment.

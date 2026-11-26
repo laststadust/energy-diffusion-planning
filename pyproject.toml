@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=65.5.1", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ddv2-energy"
+version = "0.1.0"
+description = "Candidate-energy rewards for anchor-based diffusion planning"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.23.4,<3", "torch>=2.0.1,<2.8"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ddv2_energy*"]

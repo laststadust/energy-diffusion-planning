@@ -1,0 +1,79 @@
+--- a/navsim/agents/diffusiondrivev2/diffusiondrivev2_rl_config.py
++++ b/navsim/agents/diffusiondrivev2/diffusiondrivev2_rl_config.py
+@@ -35,6 +35,21 @@
+ 
+     # new
+     num_groups : int = 4
++    # Candidate-energy reward configuration; baseline behavior is the default.
++    # Switching energy_mode to "original" restores the untouched PDM advantages.
++    energy_mode: str = "original"
++    energy_context_root: str = ""
++    energy_graph_checkpoint: str = ""
++    energy_strength: float = 0.1  # penalty weight in the training reward
++    energy_road_weight: float = 0.5
++    energy_interaction_weight: float = 0.5
++    energy_road_scale: float = 1.0
++    energy_interaction_scale: float = 1.0
++    energy_std_floor: float = 0.05
++    energy_adv_clip: float = 5.0
++    energy_chunk_size: int = 4
++    energy_motion_weight: float = 0.0  # unsupported in this release; must remain zero
++    energy_capture_candidates: bool = False  # export final training candidates for graph supervision
+     lidar_seq_len: int = 1
+ 
+     camera_width: int = 1024
+--- a/navsim/agents/diffusiondrivev2/diffusiondrivev2_model_rl.py
++++ b/navsim/agents/diffusiondrivev2/diffusiondrivev2_model_rl.py
+@@ -688,6 +688,9 @@
+         """
+         super(TrajectoryHead, self).__init__()
+ 
++        # Energy-RL options only: plain config, no new trainable tensors/state keys.
++        self._config = config
++
+         self._num_poses = num_poses
+         self._d_model = d_model
+         self._d_ffn = d_ffn
+@@ -903,6 +906,16 @@
+                 else:  # 'ttc', 'comfort', 'final', 'dir_weighted', 'progress'
+                     continue
+ 
++            # Energy-RL extension: keep the entire original PDM/GT/safety branch
++            # above intact. Only the explicitly enabled branch substitutes detached
++            # advantages. get_rlloss still updates the ORIGINAL denoising head via
++            # its ten-step log probabilities; no trajectory editing/reranking.
++            energy_metrics = {}
++            if getattr(self._config, 'energy_mode', 'original') != 'original':
++                from ddv2_energy.engine import apply_energy_reward
++                advantages, energy_metrics = apply_energy_reward(
++                    self, diffusion_output, token, reward_group, advantages, batched_sub)
++
+             # for log
+             pos_cnt  = mask_positive.sum(dim=(1,2), keepdim=True)                  # (B,1)
+             pos_sum  = (reward_group * mask_positive.float()).sum(dim=(1,2), keepdim=True)
+@@ -914,7 +927,9 @@
+             reward = batch_reward.squeeze(-1).mean()                      # for log
+ 
+             #去掉 GT 列，并套用与 reward_group 相同的 mask
+-            sub_rewards_mean = {}
++            # Original: sub_rewards_mean = {}
++            # Preserve raw PDM statistics and additionally log actual energy/advantage use.
++            sub_rewards_mean = dict(energy_metrics)
+             for k, v_full in batched_sub.items():
+                 v = v_full[:, :-1]
+                 gt_k   = v_full[:,  -1:]
+@@ -936,7 +951,13 @@
+             reward = None
+             sub_rewards_mean = None
+ 
+-        return {"all_diffusion_output":all_diffusion_output,"advantages":advantages,'reward':reward,'sub_rewards':sub_rewards_mean}
++        # Original return retained for one-line rollback:
++        # return {"all_diffusion_output":all_diffusion_output,"advantages":advantages,'reward':reward,'sub_rewards':sub_rewards_mean}
++        result = {"all_diffusion_output":all_diffusion_output,"advantages":advantages,'reward':reward,'sub_rewards':sub_rewards_mean}
++        if getattr(self._config, 'energy_capture_candidates', False):
++            # Exact sampled 4 s poses used for PDM, not interpolated/perturbed labels.
++            result['energy_candidates'] = diffusion_output.detach()
++        return result
+ 
+ 
+     def forward_test_rl(self, ego_query,agents_query,bev_feature,bev_spatial_shape,status_encoding,status_feature,camera_feature, targets,global_img,metric_cache,eta=0.0) -> Dict[str, torch.Tensor]:

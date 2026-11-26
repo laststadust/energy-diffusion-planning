@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/hustvl/DiffusionDriveV2.git",
+  "commit": "1cd12a1e155c34dcc471261835444c8d5587580b",
+  "patch": "patches/energy_reward.patch",
+  "patch_sha256": "48605d434410edb193a8aeca944a5efaa2070166facc4c10003015c7e463c405",
+  "hash_normalization": "UTF-8; LF line endings; exactly one terminal newline",
+  "files": [
+    {
+      "path": "navsim/agents/diffusiondrivev2/diffusiondrivev2_rl_config.py",
+      "before_sha256": "04b35a42a1d11da9a50d0906772a9f59c4cf373246b0a3f0a445c5360f0fafea",
+      "after_sha256": "7479beca4f911f46c4fd3597dfc6f34575d651f59b5fdc1c56c56590959daefd"
+    },
+    {
+      "path": "navsim/agents/diffusiondrivev2/diffusiondrivev2_model_rl.py",
+      "before_sha256": "ef8922afe50056dc948bb1f52f987773c35899d74b31e9ecd7ad9a2109edf91a",
+      "after_sha256": "4862b980276411be4225ba773219139e26f64c909321101ac88579e0050f2b51"
+    }
+  ]
+}
